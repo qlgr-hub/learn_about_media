@@ -1,0 +1,22 @@
+services:
+  av_dev:
+    image: av_dev:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: av_dev
+    network_mode: bridge
+    user: "1000:0"
+    restart: always
+    tty: true
+    privileged: true
+    ports:
+      - "17222:22"
+    environment:
+      TZ: 'Asia/Shanghai'
+    volumes:
+      - /home/qlgr/workspace/av_dev:/workspace
+      - /home/qlgr/.vscode-server/:/home/qlgr/.vscode-server/
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    command: ["sudo", "bash", "/usr/sbin/sshd", "-D"]

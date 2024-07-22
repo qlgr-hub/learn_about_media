@@ -1,0 +1,151 @@
+@startuml lam
+
+class Client
+note top 
+Specific application classes
+end note
+
+namespace lam {
+
+interface makeMuxerFF {
+    return: std::shared_ptr<IMuxer>
+}
+note top
+Global factory function
+end note
+
+interface makeDemuxerFF {
+    return: std::shared_ptr<IDemuxer>
+}
+note top
+Global factory function
+end note
+
+makeMuxerFF <-- Client
+makeDemuxerFF <-- Client
+
+interface makeAudioEncoderFF {
+    return: std::shared_ptr<IAudioEncoder>
+}
+note top
+Global factory function
+end note
+
+interface makeVideoEncoderFF {
+    return: std::shared_ptr<IVideoEncoder>
+}
+note top
+Global factory function
+end note
+
+interface makeAudioDecoderFF {
+    return: std::shared_ptr<IAudioDecoder>
+}
+note top
+Global factory function
+end note
+
+interface makeVideoDecoderFF {
+    return: std::shared_ptr<IVideoDecoder>
+}
+note top
+Global factory function
+end note
+
+makeAudioEncoderFF <-- Client
+makeVideoEncoderFF <-- Client
+makeAudioDecoderFF <-- Client
+makeVideoDecoderFF <-- Client
+
+
+abstract class FrameBase
+abstract class AudioFrame
+abstract class VideoFrame
+
+FrameBase <|-- AudioFrame
+FrameBase <|-- VideoFrame
+
+
+abstract class IFrameConsumer<FrameT> {
+    + {abstract} put(const FrameT*) : bool
+}
+
+abstract class IFrameProducer<FrameT> {
+    + {abstract} get() : const FrameT*
+}
+
+AudioFrame <-- IFrameConsumer
+AudioFrame <-- IFrameProducer
+VideoFrame <-- IFrameConsumer
+VideoFrame <-- IFrameProducer
+
+
+abstract class IPacket
+
+abstract class IPacketConsumer {
+    + {abstract} put(const IPacket*) : bool
+}
+
+abstract class IPacketProducer {
+    + {abstract} get() : const IPacket*
+}
+
+IPacket <-- IPacketConsumer
+IPacket <-- IPacketProducer
+
+
+abstract class IAudioCodecParam
+abstract class IVideoCodecParam
+
+
+abstract class IFormatBase {
+    + {abstract} open(std::string_view filename) : bool
+    + {abstract} close() : void
+}
+
+abstract class IMuxer {
+    + {abstract} initAudioParam(const IAudioCodecParam&) : void
+    + {abstract} initVideoParam(const IVideoCodecParam&) : void
+}
+
+abstract class IDemuxer {
+    + {abstract} getAudioParam() : const IAudioCodecParam&
+    + {abstract} getVideoParam() : const IAudioCodecParam&
+}
+
+IFormatBase <|-- IMuxer
+IPacketConsumer <|-- IMuxer
+IFormatBase <|-- IDemuxer
+IPacketProducer <|-- IDemuxer
+IMuxer --> IAudioCodecParam
+IMuxer --> IVideoCodecParam
+IDemuxer --> IAudioCodecParam
+IDemuxer --> IVideoCodecParam
+
+
+abstract class ICodecBase<CodecParamT> {
+    + {abstract} open(const CodecParamT& param) : bool
+    + {abstract} close() : void
+}
+
+abstract class IEncoder<FrameT, CodecParamT> {
+    + {abstract} getCodecParam() : const CodecParamT&
+}
+
+abstract class IDecoder<FrameT, CodecParamT>
+
+ICodecBase <|-- IEncoder
+IFrameConsumer <|-- IEncoder
+IPacketProducer <|-- IEncoder
+ICodecBase <|-- IDecoder
+IFrameProducer <|-- IDecoder
+IPacketConsumer <|-- IDecoder
+
+IEncoder --> IAudioCodecParam
+IEncoder --> IVideoCodecParam
+IDecoder --> IAudioCodecParam
+IDecoder --> IVideoCodecParam
+
+}
+
+@enduml
